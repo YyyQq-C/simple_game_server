@@ -2,6 +2,7 @@ package net.tcp;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.AdaptiveRecvByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -11,7 +12,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import net.handler.ServerChannelHandler;
+import net.handler.BaseChannelInHandler;
 import net.tcp.coder.BaseDecoder;
 import net.tcp.coder.BaseEncoder;
 import org.slf4j.Logger;
@@ -55,11 +56,11 @@ public abstract class TcpServer
         bootstrap.group(boss, work).channel(NioServerSocketChannel.class)
                 .childOption(ChannelOption.TCP_NODELAY, true)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .childOption(ChannelOption.SO_BACKLOG, 65535)
                 // 使用缓存池
-                .childOption(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(true))
+                .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .option(ChannelOption.SO_BACKLOG, 65535)
-                .option(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(true));
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .option(ChannelOption.RCVBUF_ALLOCATOR, AdaptiveRecvByteBufAllocator.DEFAULT);
 
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>()
         {
@@ -114,7 +115,7 @@ public abstract class TcpServer
      * 服务器应答器
      * @return
      */
-    public abstract ServerChannelHandler getChannelHandler();
+    public abstract BaseChannelInHandler getChannelHandler();
 
     /**
      * 服务器解码器
