@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--monitorInterval：Log4j 2 定期检查和应用配置文件的时间间隔（单位：秒，如果更改配置文件，不用重启系统）。-->
+<!--status：Log4j内部事件记录的等级，只对Log4j本身的事件有效。-->
+<!--strict：是否使用XML Schema来检查配置文件。-->
+<!--schema：Shema文件的位置-->
+
+<!--logger.info("请求处理结束，耗时：{}毫秒", (System.currentTimeMillis() - beginTime));    此种用法官方测试数据快47倍-->
+
+<Configuration status="warn" monitorInterval="30" strict="true" schema="Log4J-V2.2.xsd" shutdownHook="disable">
+
+    <!--Appender用来定义不同的输出位置，可以是console、文件、远程socket服务器、Apache Flume、JMS以及远程 UNIX 系统日志守护进程。-->
+    <!--一个Logger可以绑定多个不同的Appender-->
+    <properties>
+        <property name="LOG_BASE_HOME">./logs</property>
+        <property name="LOG_NAME">Server.log</property>
+    </properties>
+    <Appenders>
+        <!-- 输出到控制台 -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <!-- 需要记录的级别 -->
+            <!-- <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY" /> -->
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss:SSS} %p][%t][%l]%m%n"/>
+        </Console>
+
+        <RollingRandomAccessFile name="RollingRandomAccessFile"
+                                 fileName="${LOG_BASE_HOME}/${LOG_NAME}"
+                                 filePattern="${LOG_BASE_HOME}/${LOG_NAME}.%d{yyyyMMddHH}"
+                                 immediateFlush="true"
+                                 bufferSize="512">
+
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss:SSS} %p][%t][%l]%m%n"/>
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <DefaultRolloverStrategy>
+                <Delete basePath="${LOG_BASE_HOME}" maxDepth="2">
+                    <IfFileName glob="${LOG_NAME}.*"/>
+                    <IfLastModified age="1d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+
+    </Appenders>
+
+    <!--它被用来配置LoggerConfig，包含一个root logger和若干个普通logger-->
+    <!--普通必须有一个name元素，root logger不用name元素-->
+    <!--每个logger可以指定一个level（TRACE, DEBUG, INFO, WARN, ERROR, ALL or OFF），不指定时level默认为ERROR-->
+    <!--additivity指定是否同时输出log到父类的appender，缺省为true
+    <Logger name="com.xjj.test2" level="DEBUG" additivity="false">
+         <AppenderRef ref="Console"/>
+    </Logger>
+    -->
+
+    <Loggers>
+
+        <Root level="info"> <!-- 全局配置 -->
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingRandomAccessFile"/>
+        </Root>
+        <!-- 为指定包配置特殊的Log级别，方便调试 -->
+    </Loggers>
+</Configuration>
