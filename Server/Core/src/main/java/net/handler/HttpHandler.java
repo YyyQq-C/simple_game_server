@@ -3,8 +3,12 @@ package net.handler;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.message.BasicHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by YongQc
@@ -12,13 +16,15 @@ import org.slf4j.LoggerFactory;
  * 2019-10-28 15:38.
  *
  * HttpHandler
+ *
+ * GET 方式HTTP请求
  */
 public abstract class HttpHandler
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpHandler.class);
 
     private String url;
-    private Header[] headers;
+    private List<Header> headers;
 
     public HttpHandler(String url)
     {
@@ -71,13 +77,26 @@ public abstract class HttpHandler
         this.url = url;
     }
 
-    public Header[] getHeaders()
+    public List<Header> getHeaders()
     {
         return headers;
     }
 
-    public void setHeaders(Header[] headers)
+    public void setHeaders(List<Header> headers)
     {
         this.headers = headers;
+    }
+
+    /**
+     * 添加请求头
+     * @param name
+     * @param value
+     */
+    public void addHeader(String name, String value)
+    {
+        if (this.headers == null)
+            this.headers = new ArrayList<>();
+
+        headers.add(new BasicHeader(name, value));
     }
 }
