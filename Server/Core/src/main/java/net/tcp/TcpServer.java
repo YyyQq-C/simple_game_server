@@ -1,5 +1,6 @@
 package net.tcp;
 
+import constant.SystemConstant;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.AdaptiveRecvByteBufAllocator;
@@ -32,15 +33,28 @@ public abstract class TcpServer
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpServer.class);
 
+    private static final int IDLE_TIME = 1 * 60;
+
     private ServerBootstrap bootstrap;
+
+
+    public void start(int port) throws Exception
+    {
+        this.start(port, IDLE_TIME);
+    }
+
+    public void start(int port, int idleTime) throws Exception
+    {
+        this.start(port, idleTime, SystemConstant.CORE_NUM);
+    }
 
     /**
      * 启动TCP监听
      * @param port 监听端口
      * @param workThreadNum work工作线程数
-     * @param idleTime 读写空闲时间
+     * @param idleTime 读写空闲时间 秒
      */
-    public void start(int port, int workThreadNum, int idleTime) throws Exception
+    public void start(int port, int idleTime, int workThreadNum) throws Exception
     {
         if (bootstrap != null)
         {
@@ -107,8 +121,8 @@ public abstract class TcpServer
      */
     public void stop()
     {
-        bootstrap.config().group().shutdownGracefully();
         bootstrap.config().childGroup().shutdownGracefully();
+        bootstrap.config().group().shutdownGracefully();
     }
 
     /**
