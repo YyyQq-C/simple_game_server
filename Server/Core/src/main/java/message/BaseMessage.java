@@ -11,4 +11,6 @@ package message;
  */
 public abstract class BaseMessage
 {
+
+
 }
