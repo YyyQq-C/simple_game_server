@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<messages namespace="Test" explain="测试消息">
+
+	<message msgId="10101" name="ReqHello" cache="false" explain="请求">
+		<field class="string" name="commandType" explain="命令类型"/>
+		<field class="string" name="parameters" explain="参数列表"/>
+	</message>
+	
+</messages>

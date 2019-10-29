@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<configure>
+	<java path="../../../Server/Message/src/main/java/binary/"/>
+	<lua path="lua" />
+	<csharp path="csharp" />
+	<message path="protocol" />
+</configure>

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_package = "protocol";
+option java_outer_classname = "Hello";
+
+message ReqHelloWorld
+{
+	string name = 1;
+	int32 id = 2;
+}
+
+message ResHelloWorld
+{
+	string sname = 1;
+	int32 sid = 2;
+}
