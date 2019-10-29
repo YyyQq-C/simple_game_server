@@ -1,7 +1,5 @@
 package handler;
 
-import message.BinaryMessage;
-
 /**
  * Created by YongQc
  *
@@ -11,6 +9,12 @@ import message.BinaryMessage;
  */
 public class HandlerElement
 {
-    private Class<? extends BinaryMessage> message;
+    private Class message;
     private Class<? extends Handler> handler;
+
+    public HandlerElement(Class<?> message, Class<? extends Handler> handler)
+    {
+        this.message = message;
+        this.handler = handler;
+    }
 }

@@ -17,7 +17,10 @@ public class ProtocolTest
         Hello.ReqHelloWorld.Builder builder = Hello.ReqHelloWorld.newBuilder();
         builder.setId(1);
         builder.setName("name");
-        builder.build();
+
+        builder.build().toByteArray();
         Hello.ResHelloWorld world = Hello.ResHelloWorld.parseFrom(new byte[2]);
+
+
     }
 }
