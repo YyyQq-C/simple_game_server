@@ -13,11 +13,304 @@
     <version>1.0</version>
 
 
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <!-- 启动文件模板 -->
+        <start.template.file>src/main/resources/start.py</start.template.file>
+        <version.file>src/main/resources/version</version.file>
+        <!-- 文件拷贝时的编码 -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!-- 编译时的编码 -->
+        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+    </properties>
 
 
     <build>
+        <!--.${project.version}.${prefix.committedRevision} -->
+        <finalName>${project.artifactId}</finalName>
 
+        <!-- 默认源代码和资源文件目录配置 源代码默认只支持配置一个,资源支持多个 -->
+        <!-- 源代码目录 -->
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <!-- 测试源代码目录 不会打包 -->
+        <testSourceDirectory>src/test/java</testSourceDirectory>
 
+        <!-- 资源路径 资源路径可以配置多个 -->
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <excludes>
+                    <exclude>start.py</exclude>
+                    <exclude>version</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
+
+        <!-- 插件配置 -->
+        <plugins>
+            <!--获取svn版本号插件 -->
+            <!--<plugin>-->
+                <!--<groupId>com.google.code.maven-svn-revision-number-plugin</groupId>-->
+                <!--<artifactId>maven-svn-revision-number-plugin</artifactId>-->
+                <!--<version>1.7</version>-->
+                <!--<configuration>-->
+                    <!--<verbose>true</verbose>-->
+                    <!--<entries>-->
+                        <!--<entry>-->
+                            <!--<prefix>prefix</prefix>-->
+                            <!--<depth>empty</depth>-->
+                        <!--</entry>-->
+                    <!--</entries>-->
+                <!--</configuration>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--&lt;!&ndash; 生命周期阶段 &ndash;&gt;-->
+                        <!--<phase>validate</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>revision</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+                <!--<dependencies>-->
+                    <!--<dependency>-->
+                        <!--&lt;!&ndash; 由于使用的是svn1.8版本，所以需要依赖这个插件 &ndash;&gt;-->
+                        <!--<groupId>org.tmatesoft.svnkit</groupId>-->
+                        <!--<artifactId>svnkit</artifactId>-->
+                        <!--<version>1.8.9</version>-->
+                    <!--</dependency>-->
+                <!--</dependencies>-->
+            <!--</plugin>-->
+
+            <!-- git 版本号获取 -->
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <verbose>true</verbose>
+                    <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
+                    <!--<generateGitPropertiesFile>true</generateGitPropertiesFile>-->
+                    <!--<generateGitPropertiesFilename>${project.build.directory}/version.</generateGitPropertiesFilename>-->
+                </configuration>
+            </plugin>
+
+            <!-- build-helper-maven-plugin, 设置多个源文件夹 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <!-- 我们可以通过在这里添加多个source节点，来添加任意多个源文件夹 -->
+                    <execution>
+                        <id>add-resource</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/main/resources</directory>
+                                    <filtering>true</filtering>
+                                    <excludes>
+                                        <exclude>**/*.py</exclude>
+                                        <exclude>version</exclude>
+                                    </excludes>
+                                </resource>
+                                <resource>
+                                    <directory>${basedir}/src/main/resources</directory>
+                                    <excludes>
+                                        <exclude>**/*.py</exclude>
+                                        <exclude>version</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 替换启动文件版本号配置 -->
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>maven-replacer-plugin</artifactId>
+                <version>1.4.0</version>
+                <executions>
+                    <execution>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includes>
+                        <include>${version.file}</include>
+                        <!--<include>src/main/resources/check.py</include>-->
+                        <!--<include>src/main/resources/stop.py</include>-->
+                    </includes>
+                    <outputBasedir>${project.build.directory}</outputBasedir>
+                    <outputDir>.</outputDir>
+                    <preserveDir>false</preserveDir>
+                    <replacements>
+                        <replacement>
+                            <token>@version@</token>
+                            <!-- git -->
+                            <value>${git.commit.id.abbrev}</value>
+                            <!-- svn -->
+                            <!--<value>${prefix.committedRevision}</value>-->
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin>
+
+            <!-- 项目依赖插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                    <excludeTransitive>false</excludeTransitive> <!-- 表示是否不包含间接依赖的包 -->
+                    <stripVersion>false</stripVersion> <!-- 去除版本信息 -->
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <!-- 拷贝项目依赖包到lib/目录下 -->
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <excludeTransitive>false</excludeTransitive>
+                            <stripVersion>false</stripVersion>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 项目资源插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+
+                <executions>
+                    <!--拷贝配置文件 -->
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <encoding>UTF-8</encoding>
+                            <!-- 拷贝项目*/config目录下所有文件到*/config/目录下 -->
+                            <outputDirectory>${project.build.directory}/config</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>config</directory>
+                                    <include>*</include>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!--<execution>-->
+                        <!--<id>copy-sqls</id>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>copy-resources</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<encoding>UTF-8</encoding>-->
+                            <!--&lt;!&ndash; 拷贝项目*/config目录下所有文件到*/sql/目录下 &ndash;&gt;-->
+                            <!--<outputDirectory>${project.build.directory}/sql</outputDirectory>-->
+                            <!--<resources>-->
+                                <!--<resource>-->
+                                    <!--<directory>sql</directory>-->
+                                <!--</resource>-->
+                            <!--</resources>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                    <execution>
+                        <id>copy-xmls</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/classes</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/main/java</directory>
+                                    <includes>
+                                        <include>**/*.xml</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 打包插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <!-- 生成MANIFEST.MF的设置 -->
+                        <manifest>
+                            <!-- 为依赖包添加路径, 这些路径会写在MANIFEST文件的Class-Path下 -->
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <!-- jar启动入口类 -->
+                            <mainClass>Main</mainClass>
+                        </manifest>
+                        <manifestEntries>
+                            <!-- 在Class-Path下添加配置文件的路径 --> <!-- 添加本地依赖 -->
+                            <Class-Path>config/ lib/ServerAgent-1.0.jar lib/tools-1.0.jar lib/tools-linux-1.0.jar</Class-Path>
+                        </manifestEntries>
+
+                    </archive>
+                    <excludes>
+                        <exclude>**/*.py</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- 编译插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+                    <compilerArguments>
+                        <verbose />
+                        <bootclasspath>${java.home}/lib/rt.jar</bootclasspath>
+                    </compilerArguments>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
