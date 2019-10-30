@@ -92,7 +92,7 @@ public class AsyncHttpClient
         catch (InterruptedException e)
         {
             // 被打断
-            LOGGER.error("handler放入时发生异常. handler:{} e:{}", httpHandler, e);
+            LOGGER.error("handler放入时发生异常. handler:{}", httpHandler, e);
         }
     }
 
@@ -150,7 +150,7 @@ public class AsyncHttpClient
         }
         catch (Exception e)
         {
-            LOGGER.error("Http 请求发送异常.url:{} e:{}", handler.getUrl(), e);
+            LOGGER.error("Http 请求发送异常.url:{}", handler.getUrl(), e);
         }
     }
 
@@ -170,7 +170,7 @@ public class AsyncHttpClient
         }
         catch (InterruptedException e)
         {
-            LOGGER.error("等待http线程失败. e:{}", e);
+            LOGGER.error("等待http线程失败.", e);
         }
 
         // 等待队列消息执行完毕
@@ -186,7 +186,7 @@ public class AsyncHttpClient
         catch (IOException e)
         {
             // 不需要处理 只需要记录日志
-            LOGGER.error("异步HTTP停止发生异常. e:{}", e);
+            LOGGER.error("异步HTTP停止发生异常.", e);
         }
 
     }

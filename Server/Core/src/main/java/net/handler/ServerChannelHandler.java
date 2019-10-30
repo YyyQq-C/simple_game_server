@@ -1,8 +1,10 @@
 package net.handler;
 
+import handler.Handler;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thread.DispatchProcessor;
 
 /**
  * Created by YongQc
@@ -21,11 +23,9 @@ public class ServerChannelHandler extends BaseChannelInHandler
         if (ctx == null)
             return;
 
-        if (msg instanceof String)
+        if (msg instanceof Handler)
         {
-            LOGGER.info("client say msg:{}", msg);
-
-            ctx.writeAndFlush("hi! i'm server!");
+            DispatchProcessor.getInstance().submitHandler((Handler) msg);
         }
     }
 

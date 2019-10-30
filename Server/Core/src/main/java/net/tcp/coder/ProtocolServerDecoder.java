@@ -1,8 +1,12 @@
 package net.tcp.coder;
 
+import handler.Handler;
+import handler.HandlerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -18,6 +22,7 @@ import java.util.List;
  */
 public class ProtocolServerDecoder extends BaseDecoder
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolServerDecoder.class);
     /** 包序列号 */
     private static final AttributeKey<Integer> MSG_ORDER = AttributeKey.valueOf("msg_order");
 
@@ -56,7 +61,15 @@ public class ProtocolServerDecoder extends BaseDecoder
         // 消息id
         int msgID = in.readInt();
 
-
-
+        try
+        {
+            Handler handler = HandlerFactory.getInstance().parseHandler(msgID, in);
+            if (handler != null)
+                out.add(handler);
+        }
+        catch (Exception e)
+        {
+            LOGGER.error("消息解码器解码消息发生异常. ", e);
+        }
     }
 }

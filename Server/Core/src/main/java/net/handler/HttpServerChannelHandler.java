@@ -116,7 +116,7 @@ public abstract class HttpServerChannelHandler extends BaseChannelInHandler
         catch (Exception e)
         {
             res = e.getMessage();
-            LOGGER.error("处理Http请求发生异常.e:{}", e);
+            LOGGER.error("处理Http请求发生异常.", e);
         }
 
         _response(ctx, res);

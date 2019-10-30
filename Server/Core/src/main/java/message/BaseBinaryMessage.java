@@ -77,7 +77,7 @@ public abstract class BaseBinaryMessage implements Serializable
             }
             catch (Exception ex)
             {
-                LOGGER.error("encode  binary message data error,Exception :{}", ex);
+                LOGGER.error("encode  binary message data error", ex);
             }
 
         }
@@ -227,7 +227,7 @@ public abstract class BaseBinaryMessage implements Serializable
         }
         catch (Exception e)
         {
-            LOGGER.error("resolve  binary message data error,Exception :{}", e);
+            LOGGER.error("resolve  binary message data error", e);
             return 0;
         }
     }
@@ -286,7 +286,7 @@ public abstract class BaseBinaryMessage implements Serializable
         }
         catch (Exception e)
         {
-            LOGGER.error("resolve  binary message data error,Exception :{}", e);
+            LOGGER.error("resolve  binary message data error", e);
             return new String(str);
         }
     }

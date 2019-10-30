@@ -129,7 +129,7 @@ public class HandlerFactory
         }
         catch (Exception e)
         {
-            LOGGER.info("解析handler发生异常. msgId:{} e:{}", msgId, e);
+            LOGGER.info("解析handler发生异常. msgId:{}", msgId, e);
         }
 
         return null;

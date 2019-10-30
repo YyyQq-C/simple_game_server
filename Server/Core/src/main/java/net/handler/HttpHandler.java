@@ -59,7 +59,7 @@ public abstract class HttpHandler
 
     public void failed(Exception e)
     {
-        LOGGER.error("http请求[{}]发生异常. e:{}", url, e);
+        LOGGER.error("http请求[{}]发生异常. ", url, e);
     }
 
     public void cancelled()
