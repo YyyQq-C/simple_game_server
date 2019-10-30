@@ -17,4 +17,18 @@ public class HandlerElement
         this.message = message;
         this.handler = handler;
     }
+
+    public Handler createHandler() throws IllegalAccessException, InstantiationException
+    {
+        if (handler == null || message == null)
+            return null;
+
+        Handler handler = this.handler.newInstance();
+        return handler;
+    }
+
+    public Class getMessage()
+    {
+        return message;
+    }
 }

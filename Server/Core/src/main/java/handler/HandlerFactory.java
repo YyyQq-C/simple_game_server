@@ -1,6 +1,7 @@
 package handler;
 
 import com.google.protobuf.Message;
+import io.netty.buffer.ByteBuf;
 import message.BinaryMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,8 +27,6 @@ public class HandlerFactory
     private static final Logger LOGGER = LoggerFactory.getLogger(HandlerFactory.class);
     /** handler集合 消息id,HandlerElement */
     private Map<Integer, HandlerElement> handlerMap = new HashMap<>() ;
-
-
 
     /**
      * 初始化消息集合
@@ -53,14 +53,24 @@ public class HandlerFactory
                 NamedNodeMap attributes = item.getAttributes();
                 String messageName = attributes.getNamedItem("message").getNodeValue().trim();
                 Class<?> message = Class.forName(messageName);
+                if (message == null)
+                {
+                    throw new UnsupportedOperationException("定义的message不存在.message:" + messageName);
+                }
                 int msgId = -1;
-                if (message.isInstance(BinaryMessage.class))
+                if (BinaryMessage.class.isAssignableFrom(message))
                 {
                     msgId = message.getField("MsgId").getInt(message);
                 }
-                else if (message.isInstance(Message.class))
+                else if (Message.class.isAssignableFrom(message))
                 {
-                    msgId = (int) message.getMethod("hashCode").invoke(message);
+                    // 暂时使用消息名hash值作为消息id
+                    // todo 后续进行优化 考虑其他方式，尽量不使用字符串
+                    msgId = messageName.hashCode();
+                }
+                else
+                {
+                    throw new UnsupportedOperationException("定义了不支持的类型message, message:" + messageName);
                 }
 
                 String handlerName = attributes.getNamedItem("handler").getNodeValue().trim();
@@ -70,10 +80,59 @@ public class HandlerFactory
                 }
 
                 Class<? extends Handler> handler = (Class<? extends Handler>) Class.forName(handlerName);
+                if (handler == null)
+                {
+                    throw new UnsupportedOperationException("handler不存在,请检查. handler:" + handlerName);
+                }
+
                 handlerMap.put(msgId, new HandlerElement(message, handler));
+                LOGGER.info("消息ID:[{}] message:[{}] handler:[{}] 注册.", msgId, messageName, handlerName);
             }
         }
+    }
 
+    /**
+     * 解析消息的到handler
+     * @param msgId
+     * @param data
+     * @return
+     */
+    public Handler parseHandler(int msgId, ByteBuf data)
+    {
+        HandlerElement handlerElement = handlerMap.get(msgId);
+        if (handlerElement == null)
+        {
+            LOGGER.error("消息ID:[{}]对应的handler不存在.", msgId);
+            return null;
+        }
+
+        try
+        {
+            Handler handler = handlerElement.createHandler();
+            Class message = handlerElement.getMessage();
+            if (BinaryMessage.class.isAssignableFrom(message))
+            {
+                Method method = message.getDeclaredMethod("readBy", ByteBuf.class);
+                Object msg = method.invoke(null, data.readBytes(data.readableBytes()));
+                handler.setMsg(msg);
+            }
+            else if (Message.class.isAssignableFrom(message))
+            {
+                Method method = message.getDeclaredMethod("parseFrom", byte[].class);
+                byte[] array = new byte[data.readableBytes()];
+                data.readBytes(array);
+                Object msg = method.invoke(null, array);
+                handler.setMsg(msg);
+            }
+
+            return handler;
+        }
+        catch (Exception e)
+        {
+            LOGGER.info("解析handler发生异常. msgId:{} e:{}", msgId, e);
+        }
+
+        return null;
     }
 
     public static HandlerFactory getInstance()

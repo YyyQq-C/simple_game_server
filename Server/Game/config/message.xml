@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <message>
-    <msg message="" handler="" />
+    <msg message="protocol.Hello$ReqHelloWorld" handler="protocol.HandlerTest" />
+    <msg message="binary.Test$ReqHello" handler="protocol.BinaryHandlerTest" />
 
 </message>
